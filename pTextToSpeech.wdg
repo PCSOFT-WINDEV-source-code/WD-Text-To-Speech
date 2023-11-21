@@ -1,0 +1,239 @@
+#To edit and compare internal_properties, use WINDEV integrated tools.
+#Internal properties refer to the properties of controls in windows, reports, etc.
+info :
+ name : pTextToSpeech
+ major_version : 28
+ minor_version : 0
+ type : 7
+ description : ""
+ subtype : 0
+procedure_set :
+ identifier : 0x17f211ae0004273a
+ internal_properties : CAAAAAgAAABGLu41kG7fjQV3iS4F72qmnKaNh5694reolNKIW0iw
+ code_elements :
+  type_code : 31
+  p_codes :
+   -
+     code : |1-
+      
+      // Object used to perform the voice synthesizer
+      gclTextToSpeech is SpeechSynthesizer
+     type : 720896
+  procedures :
+   -
+     name : CheckDOTNETVersion
+     internal_properties : CAAAAAgAAABseYDv6udpGO0ve+5aUz+oJzAJy2frK+Ewfi3ZSXa4qhS8hDhsZu6VjD2sEXLxg3WHSMBKtJoZVPavDGZmtIKeveR9UTrEjjpToPq1IaKXfTwun2I98bSnBvkPNJe1x/IaTd9yvHw8S4wthc3ynTJTdqiXW7b+3d7Ev0PG5frWYyQaKfqE0BfeRci3ZP0qW3IE83J6hrObpxtQAZ4hJcx6zQjhlg==
+     procedure_id : 1725461067733482225
+     type_code : 15
+     group : 2
+     code : |1-
+      // Summary: Checks the version of .NET installed
+      // Syntax:
+      //[ <Result> = ] CheckDOTNETVersion ()
+      //
+      // Parameters:
+      //	None
+      // Return value:
+      // 	boolean: True if a compatible version of the .NET framework was found, False otherwise
+      //
+      PROCEDURE CheckDOTNETVersion()
+      
+      sVersionList is string
+      sVersion is string
+      rMaxVersion is real
+      bVersionOK is boolean
+      
+      
+      // Retrieves the list of .NET versions installed
+      sVersionList = DotNetVersion(dnvList)
+      
+      // Browses the list of versions
+      FOR EACH string sVersion of sVersionList SEPARATED BY CR
+      	
+      	// Defines the maximum version
+      	IF rMaxVersion < Val(sVersion) THEN
+      		rMaxVersion = Val(sVersion)
+      	END
+      	
+      END
+      
+      // The .NET framework version 3.0 or later must be found
+      IF rMaxVersion < 3.0 THEN
+      	bVersionOK = False
+      ELSE
+      	bVersionOK = True
+      END
+      
+      
+      RESULT bVersionOK
+     type : 458752
+   -
+     name : Speak
+     internal_properties : CAAAAAgAAAAeQeZWqR4YD9gNuw5ISpse4q5d4YfQh8vxSSLWonylqfGpzXAstIQfjtu5yNZJ9N/c91UXiZv53fcJCNn0zKQH2jXtD1BPimLproJX87E+1RbRiyhFUUvyPW0p6P5mipLcRRthNLb+/G4cHMU2fOcWaLmnLrlIMic+6HTcyeP/rQgO
+     procedure_id : 1725462528022572184
+     type_code : 15
+     group : 4
+     code : |1-
+      // Summary: Performs a voice synthesizer of the text passed in parameter
+      // Syntax:
+      //[ <Result> = ] Speak (<sSentence> is string [, <bLocking> is boolean [, <nSpeed> is int]])
+      //
+      // Parameters:
+      //	sSentence (string): Text to read
+      //	bLocking (boolean - default value=1): True if the reading of the text is locking, False otherwise
+      //	nSpeed (integer - default value=-1): Reading speed
+      // Return value:
+      // 	boolean: True if the synthesizer was started, False otherwise
+      //
+      // Automatic process of exceptions:   run CASE EXCEPTION:
+      //
+      
+      PROCEDURE Speak(LOCAL sSentence is string, LOCAL bLocking is boolean = True, LOCAL nSpeed is int = -1)
+      
+      // If no synthesizer is in progress
+      IF SpeakReadingInProgress() = False THEN
+      	
+      	// Default audio output
+      	gclTextToSpeech:SetOutputToDefaultAudioDevice()
+      	
+      	IF nSpeed <> -1 THEN
+      		// Modifies the reading speed
+      		gclTextToSpeech:set_Rate(nSpeed)
+      	END
+      	
+      	IF bLocking THEN
+      		// Synchronous reading
+      		gclTextToSpeech:Speak(sSentence)
+      	ELSE
+      		// Asynchronous reading
+      		gclTextToSpeech:SpeakAsync(sSentence)
+      	END
+      	
+      	RESULT True	
+      END
+      
+      
+      RESULT False
+      
+      CASE EXCEPTION:
+      RESULT False
+     type : 458752
+   -
+     name : SpeakToFile
+     internal_properties : CAAAAAgAAAAeQeZWqR4YD9gNuw5ISpse4q5d4YfQh8vxSSLWonylqfGpzXAstIQfjtu5yNZJ9N/c91UXiZv53fcJCNn0zKQH2jXtD1BPimLproJX87E+1RbRiyhFUUvyPW0p6P5mipLcRRthNLb+/G4cHMU2fOcWaLmnLrlIMic+6HTcyeP/rQgO
+     procedure_id : 1725464383448548266
+     type_code : 15
+     group : 4
+     code : |1-
+      // Summary: Performs a voice synthesizer of the text passed in parameter to an audio file (in WAV format)
+      // Syntax:
+      //[ <Result> = ] SpeakToFile (<sSentence> is string, <sOutputAudioFile> is string [, <bLocking> is boolean [, <nSpeed> is int]])
+      //
+      // Parameters:
+      //	sSentence (string): Text to read
+      //	sOutputAudioFile (string): Full path of the audio file that will be generated
+      //	bLocking (boolean - default value=1): True if the reading of the text is locking, False otherwise
+      //	nSpeed (integer - default value=-1): Reading speed
+      // Return value:
+      // 	boolean: True if the synthesizer was started, False otherwise
+      //
+      // Automatic process of exceptions:   run CASE EXCEPTION:
+      //
+      PROCEDURE SpeakToFile(LOCAL sSentence is string, LOCAL sOutputAudioFile is string, LOCAL bLocking is boolean = True, LOCAL nSpeed is int = -1)
+      
+      // If no synthesizer is in progress
+      IF SpeakReadingInProgress() = False THEN
+      	
+      	// Audio output into the specified file
+      	gclTextToSpeech:SetOutputToWaveFile(sOutputAudioFile)
+      	
+      	IF nSpeed <> -1 THEN
+      		// Modifies the reading speed
+      		gclTextToSpeech:set_Rate(nSpeed)
+      	END
+      	
+      	IF bLocking THEN
+      		// Synchronous reading
+      		gclTextToSpeech:Speak(sSentence)
+      	ELSE
+      		// Asynchronous reading
+      		gclTextToSpeech:SpeakAsync(sSentence)
+      	END
+      	
+      	RESULT True	
+      END
+      
+      RESULT False
+      
+      CASE EXCEPTION:
+      RESULT False
+     type : 458752
+   -
+     name : SpeakEnd
+     internal_properties : CAAAAAgAAAAeQeZWqR4YD9gNuw5ISpse4q5d4YfQh8vxSSLWonylqfGpzXAstIQfjtu5yNZJ9N/c91UXiZv53fcJCNn0zKQH2jXtD1BPimLproJX87E+1RbRiyhFUUvyPW0p6P5mipLcRRthNLb+/G4cHMU2fOcWaLmnLrlIMic+6HTcyeP/rQgO
+     procedure_id : 1725484324982742583
+     type_code : 15
+     group : 4
+     code : |1-
+      // Summary: Ends all the voice synthesizers in progress
+      // Syntax:
+      //[ <Result> = ] SpeakEnd ()
+      //
+      // Parameters:
+      //	None
+      // Return value:
+      // 	boolean: True if the function was run, False otherwise
+      //
+      // Automatic process of exceptions:   run CASE EXCEPTION:
+      //
+      
+      PROCEDURE SpeakEnd()
+      
+      // If no synthesizer is in progress
+      IF SpeakReadingInProgress() = False THEN RESULT True
+      
+      // Ends all the voice synthesizers in progress
+      gclTextToSpeech:SpeakAsyncCancelAll()
+      
+      RESULT True
+      
+      CASE EXCEPTION:
+      RESULT False
+     type : 458752
+   -
+     name : SpeakReadingInProgress
+     internal_properties : CAAAAAgAAAAeQeZWqR4YD9gNuw5ISpse4q5d4YfQh8vxSSLWonylqfGpzXAstIQfjtu5yNZJ9N/c91UXiZv53fcJCNn0zKQH2jXtD1BPimLproJX87E+1RbRiyhFUUvyPW0p6P5mipLcRRthNLb+/G4cHMU2fOcWaLmnLrlIMic+6HTcyeP/rQgO
+     procedure_id : 1725486042969732803
+     type_code : 15
+     group : 4
+     code : |1-
+      // Summary: Indicates whether a voice synthesizer is currently run
+      // Syntax:
+      //[ <Result> = ] SpeakReadingInProgress ()
+      //
+      // Parameters:
+      //	None
+      // Return value:
+      // 	boolean: True if a read operation is in progress, False otherwise
+      //
+      // Automatic process of exceptions:   run CASE EXCEPTION:
+      //
+      
+      PROCEDURE SpeakReadingInProgress()
+      
+      RESULT (gclTextToSpeech:get_State() <> SynthesizerState::Ready)
+      
+      CASE EXCEPTION:
+      RESULT False
+     type : 458752
+  procedure_templates : []
+  property_templates : []
+ code_parameters :
+  internal_properties : CAAAAAgAAACVGQgYbalU7DKC3oH4ItDrjtcTHXXV/EuH8q0IbhyQlw==
+  original_name : Collection1
+resources :
+ string_res :
+  identifier : 0x17f210fe00017922
+  internal_properties : CAAAAAgAAACm76HWfKGWp33VjXInA4cRlqArlgTTA862QGt72W2ld5Y=
+custom_note :
+ internal_properties : CAAAAAgAAABtB9HWVzrXO2+4NDRVK0vmzaNKrCKqH1DBX30lMmGZ
